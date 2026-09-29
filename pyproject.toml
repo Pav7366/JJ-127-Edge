@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anpr-edge"
+version = "0.1.0"
+description = "Edge container for a city-wide ANPR traffic monitoring demo"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests", "main.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "S", "N", "RUF"]
+ignore = [
+    "E501",   # long lines are mostly log lines
+    "S101",   # asserts are fine, including in tests
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "N", "SLF"]
+"main.py" = ["E402"]
+"src/anpr_edge/__init__.py" = ["F401"]
+"src/anpr_edge/models/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["anpr_edge"]

@@ -1,0 +1,24 @@
+# ANPR edge container - runtime dependencies.
+#
+# The vehicle stage is an ONNX graph (yolo26s.onnx) produced at build time, so
+# the runtime needs onnxruntime but NOT torch / torchvision / ultralytics.
+# That also means only the headless OpenCV wheel is required: the GUI build was
+# previously dragged in by ultralytics and forced the dual-install workaround.
+#
+# To (re)export the vehicle model on a host, install the build extras once:
+#   pip install -r requirements-build.txt
+#   python scripts/download_models.py
+#
+# Verified combination: Python 3.11, onnxruntime 1.30.0, fast-alpr 0.4.0,
+# opencv-python-headless 5.0.0.93, numpy 2.x.
+
+# --- vehicle detection (ONNX Runtime, CPU only) --------------------------------
+onnxruntime==1.30.0
+
+# --- plate detection + plate OCR (ONNX Runtime, CPU only) --------------------
+fast-alpr[onnx]==0.4.0
+opencv-python-headless==5.0.0.93
+
+# --- plumbing ----------------------------------------------------------------
+numpy>=2.0,<3
+paho-mqtt==2.1.0

@@ -1,0 +1,18 @@
+# Optional, host-only extras for exporting an Ultralytics checkpoint to ONNX.
+#
+# NOT used by the Docker build - the image is built from the committed
+# models/yolo26s.onnx graph, so torch never appears in it at all. These are only
+# needed if you want to regenerate that graph (or a differently sized one) from a
+# .pt on a workstation, e.g. to produce the 512 or 416 variants:
+#
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+#   pip install -r requirements-build.txt
+#   python scripts/download_models.py --export-vehicle yolo26s --imgsz 512
+#
+# Leave the checkpoint as the default: the Ultralytics download is unattended,
+# but the export step needs the network and about 2 GB of build-time packages.
+
+ultralytics==8.4.163
+torch>=2.2,<3
+torchvision>=0.17,<1
+onnx>=1.12,<2

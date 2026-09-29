@@ -1,0 +1,96 @@
+# One edge node per simulated camera, one shared broker, one subscriber that
+# proves the payloads arrive.
+#
+#   docker compose up --build
+#   docker compose logs -f edge
+#   docker compose down -v
+
+x-edge-common: &edge-common
+  build:
+    context: .
+  image: anpr-edge:latest
+  restart: unless-stopped
+  env_file:
+    # Optional: every service also sets its own environment below, so the stack
+    # starts without a .env. Use it to tune the *_defaults.
+    - path: .env
+      required: false
+  environment:
+    MQTT_BROKER: mosquitto:1883
+  volumes:
+    # Mount the footage read-only; plate images are written to ./data/plates.
+    - ./data:/data
+  depends_on:
+    mosquitto:
+      condition: service_healthy
+  deploy:
+    resources:
+      limits:
+        # ~1.5 CPU each, the measured single-camera working set
+        cpus: "1.5"
+        memory: 1g
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./deploy/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    healthcheck:
+      # Publish a probe: succeeds only if the broker accepts connections.
+      test: ["CMD-SHELL", "mosquitto_pub -h 127.0.0.1 -p 1883 -t 'anpr/health' -m up -q 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # Three cameras to show the "edge node" pattern: identical image, different
+  # CAMERA_ID / coordinates / clip.
+  edge:
+    <<: *edge-common
+    container_name: anpr-edge-cam01
+    environment:
+      MQTT_BROKER: mosquitto:1883
+      CAMERA_ID: cam-01
+      LAT: "12.9716"
+      LON: "77.5946"
+      VIDEO_PATH: /data/cam01.mp4
+      FRAME_STRIDE: "3"
+
+  edge-2:
+    <<: *edge-common
+    container_name: anpr-edge-cam02
+    environment:
+      MQTT_BROKER: mosquitto:1883
+      CAMERA_ID: cam-02
+      LAT: "12.9800"
+      LON: "77.6000"
+      VIDEO_PATH: /data/cam02.mp4
+      FRAME_STRIDE: "4"
+
+  edge-3:
+    <<: *edge-common
+    container_name: anpr-edge-cam03
+    environment:
+      MQTT_BROKER: mosquitto:1883
+      CAMERA_ID: cam-03
+      LAT: "12.9900"
+      LON: "77.6100"
+      VIDEO_PATH: /data/cam03.mp4
+      FRAME_STRIDE: "5"
+
+  # Prints every detection that crosses the broker (the "city" side).
+  monitor:
+    image: eclipse-mosquitto:2
+    container_name: anpr-edge-monitor
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    command: >
+      mosquitto_sub -h mosquitto -p 1883 -t 'anpr/#' -v
+    restart: unless-stopped
+
+volumes:
+  mosquitto-data:

@@ -1,0 +1,38 @@
+# Copy to .dockerignore - keeps the build context small and the image cache stable.
+
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+htmlcov
+.coverage
+
+# Local runtime artefacts: never bake footage or generated weights into the
+# image. The one exception is the vehicle model, which is a build input - it is
+# committed to the repo and copied into /models by the Dockerfile.
+data
+assets
+*.mp4
+*.avi
+*.mov
+*.mkv
+models/*
+*.onnx
+*.pt
+*.engine
+!models/yolo26s.onnx
+
+# Docs and dev-only files
+README.md
+tests
+.env
+.env.*
+!.env.example
+docker-compose.yml
+Dockerfile
+.dockerignore

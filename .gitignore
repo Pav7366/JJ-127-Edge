@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime output
+data/
+*.mp4
+*.avi
+*.mov
+*.mkv
+models/*
+*.onnx
+*.pt
+*.engine
+# The vehicle model is a build input and is committed, so it has to be
+# re-included *after* the patterns above - in git the last matching rule wins,
+# and an excluded directory cannot be descended into (hence "models/*").
+!models/yolo26s.onnx
+
+# Secrets / local config
+.env
+*.pem
+*.key
+*.crt
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
